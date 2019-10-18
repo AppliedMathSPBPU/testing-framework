@@ -1,8 +1,10 @@
+from typing import List, Union
+
 from testingframework.datagenerator.units.unit import Unit
 
 
 class PreprocessorUnit(Unit):
-    def process(self, file_names: list):
+    def process(self, file_names: List[Union[str, List[str]]]) -> None:
         """Unravel directory names into contained file names. Sort file names.
 
         Args:
