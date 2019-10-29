@@ -12,7 +12,7 @@ class PreprocessorUnit(Unit):
             file_names (list): Input list of strings or lists of strings.
         """
         # unravel directories
-        for name in file_names:
+        for name in list(file_names):
             path = pth.Path(name)
 
             # check path exists
@@ -26,20 +26,18 @@ class PreprocessorUnit(Unit):
                 file_names.remove(name)
 
                 # find contained files with unique name stems
-                files = []
                 file_stems = []
                 for child in path.iterdir():
                     if not child.is_file():
                         continue
-                    # add if unique name stem
+                    # add to file_names if unique name stem
                     if child.stem not in file_stems:
                         file_stems.append(child.stem)
-                        files.append(child)
-
-                # add contained files to 'file_names'
-                file_names.extend([str(file) for file in files])
+                        file_names.append(str(child))
 
         # sort 'file_names'
         file_names.sort()
 
         self.next_unit.process(file_names)
+    # end of 'process' function
+# end of 'PreprocessorUnit' class

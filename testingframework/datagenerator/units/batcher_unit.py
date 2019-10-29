@@ -26,3 +26,5 @@ class BatcherUnit(Unit):
                 batch = []
         if len(batch) != 0:
             self.output_list.append(batch)
+    # end of 'process' function
+# end of 'BatcherUnit' class
