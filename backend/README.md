@@ -1,8 +1,8 @@
-# Corefa
+# Backend
 
 ## Overview
 
-Corefa is tool for computational resources management. 
+Tool for computational resources management. 
 
 ### Basics
 
@@ -52,7 +52,7 @@ Just [add worker](#add-worker) from some client first time.
 
 Run **add-worker.py** passing json worker config.
 - Saves worker information on the client.
-- Initializes corefa on worker if it has not been initialized before.
+- Initializes tool on worker if it has not been initialized before.
 
 #### Allocate time slot of resource on worker (TODO)
 
