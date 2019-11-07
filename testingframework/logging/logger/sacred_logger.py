@@ -1,4 +1,4 @@
-from testingframework.logger.logger import Logger
+from testingframework.logging.logger.logger import Logger
 
 
 class SacredLogger(Logger):
