@@ -9,10 +9,10 @@ from testingframework.logging.datacollector.data_collector import DataCollector
 from testingframework.logging.session import Session
 
 
-class MLFlowDataCollector(DataCollector):
+class MLflowDataCollector(DataCollector):
     def __init__(self, session: Session = Session()) -> None:
-        super().__init__(session)
         self.__experiment_id: int = None
+        super().__init__(session)
     # end of '__init__' function
 
     def __get_uri(self):
@@ -51,28 +51,28 @@ class MLFlowDataCollector(DataCollector):
         self._session.storage_path = storage_path
     # end of 'set_storage_path' function
 
-    def __get_mlflow_runs(self, search_query: str) -> List[Run]:
+    def __get_mlflow_runs(self, search_query: str = "") -> List[Run]:
         client = mlflow.tracking.MlflowClient(self.__get_uri())
         return client.search_runs(self.__experiment_id, search_query)
     # end of '__get_mlflow_runs' function
 
-    def get_runs(self, search_query: str) -> List[dict]:
+    def get_runs(self, search_query: str = "") -> List[dict]:
         return [run.to_dictionary() for run in self.__get_mlflow_runs(search_query)]
     # end of 'get_runs' function
 
-    def get_parameters(self, parameter_name: str, search_query: str) -> List[float]:
+    def get_parameters(self, parameter_name: str, search_query: str = "") -> List[float]:
         runs: List[Run] = self.__get_mlflow_runs(search_query)
 
         return [run.data.params[parameter_name] for run in runs]
     # end of 'get_parameter' function
 
-    def get_metrics(self, metric_name: str, search_query: str) -> List[float]:
+    def get_metrics(self, metric_name: str, search_query: str = "") -> List[float]:
         runs: List[Run] = self.__get_mlflow_runs(search_query)
 
         return [run.data.metrics[metric_name] for run in runs]
     # end of 'get_metric' function
 
-    def get_artifacts(self, artifact_name: str, search_query: str) -> List[str]:
+    def get_artifacts(self, artifact_name: str, search_query: str = "") -> List[str]:
         runs: List[Run] = self.__get_mlflow_runs(search_query)
 
         return [run.info.artifact_uri + "/" + artifact_name for run in runs]

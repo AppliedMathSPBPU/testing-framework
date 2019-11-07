@@ -40,6 +40,6 @@ class Session:
 
     @storage_path.setter
     def storage_path(self, name: str):
-        self.__storage_path = Session.__check_empty(name)
+        self.__storage_path = Session.__check_empty(name, "./projects")
     # end of 'storage_path.setter' function
 # end of 'Session' class

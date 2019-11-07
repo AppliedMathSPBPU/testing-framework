@@ -53,12 +53,16 @@ class MLflowLogger(Logger):
 
     def start_run(self, experiment_name: str = "", project_name: str = "") -> None:
         """Start run in the current experiment."""
-        self.__run = mlflow.start_run()
+        if not self._is_running:
+            self.__run = mlflow.start_run()
+            self._is_running = True
     # end of 'start_run' function
 
     def end_run(self) -> None:
         """End current active run."""
-        mlflow.end_run()
+        if self._is_running:
+            mlflow.end_run()
+            self._is_running = False
     # end of 'end_run' function
 
     def log_parameter(self, parameter_name: str, value: float) -> None:

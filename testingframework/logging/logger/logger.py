@@ -11,10 +11,22 @@ class Logger(ABC):
         self._session: Session = Session(session.experiment_name, session.project_name,
                                          session.storage_path)
         
+        self.set_storage_path(session.storage_path)
         self.set_project(session.project_name)
         self.set_experiment(session.experiment_name)
-        self.set_storage_path(session.storage_path)
+
+        self._is_running: bool = False
     # end of '__init__' function
+
+    def __enter__(self) -> 'Logger':
+        self.start_run()
+        return self
+    # end of '__enter__' function
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # TODO: various exception handling
+        self.end_run()
+    # end of '__exit__' function
 
     @abstractmethod
     def set_project(self, project_name: str = "") -> None:

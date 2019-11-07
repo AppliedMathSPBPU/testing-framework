@@ -12,9 +12,9 @@ class DataCollector(ABC):
         self._session: Session = Session(session.experiment_name, session.project_name,
                                          session.storage_path)
 
+        self.set_storage_path(session.storage_path)
         self.set_project(session.project_name)
         self.set_experiment(session.experiment_name)
-        self.set_storage_path(session.storage_path)
     # end of '__init__' function
 
     @abstractmethod
@@ -45,19 +45,19 @@ class DataCollector(ABC):
         pass
 
     @abstractmethod
-    def get_runs(self, search_query: str) -> List[dict]:
+    def get_runs(self, search_query: str = "") -> List[dict]:
         pass
 
     @abstractmethod
-    def get_parameters(self, parameter_name: str, search_query: str) -> List[float]:
+    def get_parameters(self, parameter_name: str, search_query: str = "") -> List[float]:
         pass
 
     @abstractmethod
-    def get_metrics(self, metric_name: str, search_query: str) -> List[float]:
+    def get_metrics(self, metric_name: str, search_query: str = "") -> List[float]:
         pass
 
     @abstractmethod
-    def get_artifacts(self, artifact_name: str, search_query: str) -> List[str]:
+    def get_artifacts(self, artifact_name: str, search_query: str = "") -> List[str]:
         pass
 
 
