@@ -4,18 +4,19 @@ import numpy as np
 import nibabel as nib
 from nibabel.filebasedimages import ImageFileError
 import logging
+from keras.utils import Sequence
+import random
 
 from testingframework.datagenerator.units.unit import Unit
 from testingframework.datagenerator.units.batcher_unit import BatcherUnit
 from testingframework.datagenerator.units.preprocessor_unit import PreprocessorUnit
 
 
-class DataGenerator:
+class DataGenerator(Sequence):
     batches = []
-    index = -1
 
     def __init__(self, units: List[Unit], file_names: Union[str, List[str]],
-                 files_path: str = "", batch_size: int = 3):
+                 files_path: str = "", batch_size: int = 3, shuffle: bool = True):
         # insert preprocessor and batcher units
         units.insert(0, PreprocessorUnit())
         units.append(BatcherUnit(batch_size, self.batches))
@@ -37,26 +38,24 @@ class DataGenerator:
             units[0].process(file_names)
         else:
             units[0].process([file_names])
-    # end of '__init__' function
 
-    def __iter__(self):
-        return self
-    # end of '__iter__' function
+        # save additional configurations
+        self.shuffle = shuffle
+    # end of '__init__' function
 
     @staticmethod
     def __load_image(image_name: str) -> np.ndarray:
         return nib.load(image_name).get_fdata()
     # end of '_load_image' function
 
-    def __next__(self) -> Union[np.ndarray, List[np.ndarray]]:
-        self.index += 1
+    def __len__(self) -> int:
+        return len(self.batches)
+    # end of '__len__' function
 
-        if self.index == len(self.batches):
-            raise StopIteration
-
+    def __getitem__(self, index) -> np.array:
         # load batch
         batch = []
-        for image in self.batches[self.index]:
+        for image in self.batches[index]:
             try:
                 # check if images are "stacked"
                 if isinstance(image, list):
@@ -70,7 +69,12 @@ class DataGenerator:
                 batch.append(self.__load_image(image))
             except (FileNotFoundError, ImageFileError):
                 logging.exception("Caught image load exception")
-                
+
         return batch
-    # end of '__next__' function
+    # end of '__getitem__' function
+
+    def on_epoch_end(self):
+        if self.shuffle:
+            random.shuffle(self.batches)
+    # end of 'on_epoch_end' function
 # end of 'DataGenerator' class
