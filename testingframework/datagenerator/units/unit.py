@@ -1,12 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Union, List
 
+FileNameType = Union[str, List[str]]
+
 
 class Unit(ABC):
     next_unit: 'Unit' = None
 
     @abstractmethod
-    def process(self, file_names: List[Union[str, List[str]]]) -> None:
+    def process(self, file_names: List[FileNameType]) -> None:
         """Process 'file_names' and pass them forward via 'next_unit.process()'.
 
         Args:
