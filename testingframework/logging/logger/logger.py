@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import Union, List, Tuple
 
 from testingframework.datagenerator.data_generator import DataGenerator
 from testingframework.logging.session import Session
+
+MetricValueType = Union[float, List[float], Tuple[float, ...]]
 
 
 class Logger(ABC):
@@ -66,12 +69,12 @@ class Logger(ABC):
         pass
 
     @abstractmethod
-    def log_parameter(self, parameter_name: str, value: float) -> None:
+    def log_parameter(self, parameter_name: str, value: str) -> None:
         """Log parameter to the current run.
 
         Args:
             parameter_name (str): Logged parameter name.
-            value (float): Logged parameter value.
+            value (str): Logged parameter value.
         """
         pass
 
@@ -85,12 +88,12 @@ class Logger(ABC):
         pass
 
     @abstractmethod
-    def log_metric(self, metric_name: str, value: float) -> None:
+    def log_metric(self, metric_name: str, value: MetricValueType) -> None:
         """Log metric to the current run.
 
         Args:
             metric_name (str): Logged metric name.
-            value (float): Logged metric value.
+            value (MetricValueType): Logged metric value.
         """
         pass
 

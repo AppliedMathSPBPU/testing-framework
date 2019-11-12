@@ -49,15 +49,22 @@ class DataCollector(ABC):
         pass
 
     @abstractmethod
-    def get_parameters(self, parameter_name: str, search_query: str = "") -> List[float]:
+    def get_parameter_values(self, parameter_name: str, runs: List[dict]) -> List[str]:
         pass
 
     @abstractmethod
-    def get_metrics(self, metric_name: str, search_query: str = "") -> List[float]:
+    def get_metric_values(self, metric_name: str, runs: List[dict]) -> List[float]:
         pass
 
     @abstractmethod
     def get_artifacts(self, artifact_name: str, search_query: str = "") -> List[str]:
         pass
+    
+    @abstractmethod
+    def list_metrics(self, runs: List[dict]) -> List[str]:
+        pass
 
-
+    @abstractmethod
+    def list_experiments(self) -> List[str]:
+        pass
+# end of 'DataCollector' class

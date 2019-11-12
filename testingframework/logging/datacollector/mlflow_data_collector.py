@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Set
 
 import mlflow
 from mlflow.tracking import MlflowClient
@@ -27,6 +27,8 @@ class MLflowDataCollector(DataCollector):
         """
         # TODO: catch doesn't exist
         self._session.project_name = project_name
+
+        self.set_experiment()
     # end of 'set_project' function
 
     def set_experiment(self, experiment_name: str = "") -> None:
@@ -60,16 +62,28 @@ class MLflowDataCollector(DataCollector):
         return [run.to_dictionary() for run in self.__get_mlflow_runs(search_query)]
     # end of 'get_runs' function
 
-    def get_parameters(self, parameter_name: str, search_query: str = "") -> List[float]:
-        runs: List[Run] = self.__get_mlflow_runs(search_query)
+    def get_parameter_values(self, parameter_name: str, runs: List[dict]) -> List[str]:
+        output: List[str] = []
 
-        return [run.data.params[parameter_name] for run in runs]
+        for run in runs:
+            try:
+                output.append(run["data"]["parameters"][parameter_name])
+            except KeyError:
+                output.append("")
+
+        return output
     # end of 'get_parameter' function
 
-    def get_metrics(self, metric_name: str, search_query: str = "") -> List[float]:
-        runs: List[Run] = self.__get_mlflow_runs(search_query)
+    def get_metric_values(self, metric_name: str, runs: List[dict]) -> List[float]:
+        output: List[float] = []
 
-        return [run.data.metrics[metric_name] for run in runs]
+        for run in runs:
+            try:
+                output.append(run["data"]["metrics"][metric_name])
+            except KeyError:
+                output.append(float("NaN"))
+
+        return output
     # end of 'get_metric' function
 
     def get_artifacts(self, artifact_name: str, search_query: str = "") -> List[str]:
@@ -77,3 +91,19 @@ class MLflowDataCollector(DataCollector):
 
         return [run.info.artifact_uri + "/" + artifact_name for run in runs]
     # end of 'get_artifact' function
+
+    def list_metrics(self, runs: List[dict]) -> List[str]:
+        metric_names: Set[str] = set()
+
+        for run in runs:
+            metrics: dict = run["data"]["metrics"]
+            metric_names.update(metrics.keys())
+
+        return list(metric_names)
+    # end of 'list_metrics' function
+
+    def list_experiments(self) -> List[str]:
+        return [experiment.name
+                for experiment in MlflowClient(self.__get_uri()).list_experiments()]
+    # end of 'list_experiments' function
+

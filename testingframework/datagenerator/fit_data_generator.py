@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
 import numpy as np
 import logging
@@ -57,4 +57,9 @@ class FitDataGenerator(DataGenerator):
         # self._target_generator._shuffle(shuffled_indices=indices)
         pass
     # end of '_shuffle' function
+
+    def get_raw_file_names(self) -> Tuple[List[str], ...]:
+        return self._input_generator.get_raw_file_names(), \
+               self._target_generator.get_raw_file_names()
+    # end of 'get_raw_file_names' function
 # end of 'FitDataGenerator' class

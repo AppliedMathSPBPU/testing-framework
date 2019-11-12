@@ -8,5 +8,5 @@ class SacredDataCollector(DataCollector):
     def get_runs(self, criteria: List[Criterion]) -> List[dict]:
         pass
 
-    def get_metrics(self, metric_name: str, criteria: List[Criterion]) -> List[float]:
+    def get_metric_values(self, metric_name: str, criteria: List[Criterion]) -> List[float]:
         pass

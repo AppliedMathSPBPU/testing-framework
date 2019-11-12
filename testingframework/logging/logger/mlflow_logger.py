@@ -1,7 +1,7 @@
 import mlflow
 import mlflow.entities
 
-from testingframework.logging.logger.logger import Logger
+from testingframework.logging.logger.logger import Logger, MetricValueType
 from testingframework.datagenerator.data_generator import DataGenerator
 from testingframework.logging.session import Session
 
@@ -26,6 +26,8 @@ class MLflowLogger(Logger):
         """
         self._session.project_name = project_name
         self.__set_uri()
+
+        self.set_experiment()
     # end of 'set_project' function
 
     def set_experiment(self, experiment_name: str = "") -> None:
@@ -81,17 +83,32 @@ class MLflowLogger(Logger):
         Args:
             data_generator (DataGenerator): Data generator to extract input data from.
         """
-        # TODO
-        pass
+        with open("input_data.txt", "w+") as file:
+            file.write("raw file names:\n")
+            file.write(str(data_generator.get_raw_file_names()))
+            file.write("\n\nbatches names:\n")
+            file.write(str(data_generator.get_batches()))
+
+        self.log_artifact("input_data.txt")
     # end of 'log_input_data' function
 
-    def log_metric(self, metric_name: str, value: float) -> None:
+    def log_metric(self, metric_name: str, value: MetricValueType) -> None:
         """Log metric to the current run.
 
         Args:
             metric_name (str): Logged metric name.
-            value (float): Logged metric value.
+            value (MetricValueType): Logged metric value.
         """
+        if isinstance(value, list):
+            for single_value in value:
+                mlflow.log_metric(metric_name, single_value)
+            return
+
+        if isinstance(value, tuple):
+            for single_value in value:
+                mlflow.log_metric(metric_name, single_value)
+            return
+
         mlflow.log_metric(metric_name, value)
     # end of 'log_metric' function
 
