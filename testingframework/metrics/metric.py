@@ -11,6 +11,8 @@ DataType = Union[np.ndarray, List[np.ndarray]]
 
 
 class Metric(ABC):
+    _TRUE_INDEX = 0
+    _PREDICTED_INDEX = 1
     @abstractmethod
     def name(self) -> str:
         """Get metric name as a string.
@@ -37,7 +39,7 @@ class NegativeJacobianDet(Metric):
     def name(self) -> str:
         return "Negative Jacobian Det"
 
-    def jacobian_det(self, displacements):
+    def _jacobian_det(self, displacements):
         # Source: https://github.com/dykuang/Medical-image-registration/blob/master/source/losses.py
         dvf = np.expand_dims(displacements, 0)
         D_y = (dvf[:, 1:, :-1, :-1, :] - dvf[:, :-1, :-1, :-1, :])
@@ -51,7 +53,7 @@ class NegativeJacobianDet(Metric):
         return D1 - D2 + D3  
 
     def calculate(self, data: DataType) -> float:
-        return (self.jacobian_det(data) <= 0).sum()  
+        return (NegativeJacobianDet._jacobian_det(data) <= 0).sum()  
 
     
 class NormalizedCrossCorrelation(Metric):
@@ -60,8 +62,8 @@ class NormalizedCrossCorrelation(Metric):
 
     def calculate(self, data: DataType) -> float:
         #reshape to vector
-        y_true = data[0].ravel()
-        y_pred = data[1].ravel()
+        y_true = data[Metric._TRUE_INDEX].ravel()
+        y_pred = data[Metric._PREDICTED_INDEX].ravel()
         #normalize
         y_true = (y_true - np.mean(y_true)) / np.std(y_true)
         y_pred = (y_pred - np.mean(y_pred)) / np.std(y_pred)
@@ -74,8 +76,8 @@ class  MeanDice(Metric):
         return "Mean Dice"
 
     def calculate(self, data: DataType) -> float:
-        fixed_segm = data[0].flatten()
-        moved_segm = data[1].flatten()
+        fixed_segm = data[Metric._TRUE_INDEX].flatten()
+        moved_segm = data[Metric._PREDICTED_INDEX].flatten()
         array = f1_score(fixed_segm,  moved_segm, average=None)
         dice_pair_segments = [dice for dice in array]
         dice_pair_mean = mean(dice_pair_segments)
@@ -87,8 +89,8 @@ class MeanSquaredError(Metric):
         return "Mean Squared Error"
 
     def calculate(self, data: DataType) -> float:
-        fixed = data[0]
-        moved = data[1]
+        fixed = data[Metric._TRUE_INDEX]
+        moved = data[Metric._PREDICTED_INDEX]
         mse_pair = mean_squared_error(fixed.flatten(), moved.flatten())
         return mse_pair
 
@@ -97,7 +99,7 @@ class MeanAbsoluteError(Metric):
         return "Mean Absolute Error" 
 
     def calculate(self, data: DataType) -> float:
-        fixed = data[0]
-        moved = data[1]
+        fixed = data[Metric._TRUE_INDEX]
+        moved = data[Metric._PREDICTED_INDEX]
         mae_pair = mean_absolute_error(fixed.flatten(), moved.flatten())
         return mae_pair       
