@@ -1,11 +1,18 @@
 from abc import ABC, abstractmethod
 from typing import Union, List
-from numpy import ndarray
+from sklearn.metrics import f1_score
+from sklearn.metrics import mutual_info_score
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+from statistics import mean
+import numpy as np
 
-DataType = Union[ndarray, List[ndarray]]
+DataType = Union[np.ndarray, List[np.ndarray]]
 
 
 class Metric(ABC):
+    _TRUE_INDEX = 0
+    _PREDICTED_INDEX = 1
     @abstractmethod
     def name(self) -> str:
         """Get metric name as a string.
@@ -27,3 +34,72 @@ class Metric(ABC):
             (float): Calculated metric value.
         """
         pass
+
+class NegativeJacobianDet(Metric):
+    def name(self) -> str:
+        return "Negative Jacobian Det"
+
+    def _jacobian_det(self, displacements):
+        # Source: https://github.com/dykuang/Medical-image-registration/blob/master/source/losses.py
+        dvf = np.expand_dims(displacements, 0)
+        D_y = (dvf[:, 1:, :-1, :-1, :] - dvf[:, :-1, :-1, :-1, :])
+        D_x = (dvf[:, :-1, 1:, :-1, :] - dvf[:, :-1, :-1, :-1, :])
+        D_z = (dvf[:, :-1, :-1, 1:, :] - dvf[:, :-1, :-1, :-1, :])
+
+        D1 = (D_x[..., 0] + 1) * ( (D_y[..., 1] + 1) * (D_z[..., 2] + 1) - D_z[..., 1] * D_y[..., 2])
+        D2 = (D_x[..., 1]) * (D_y[..., 0] * (D_z[..., 2] + 1) - D_y[..., 2] * D_x[..., 0])
+        D3 = (D_x[..., 2]) * (D_y[..., 0] * D_z[..., 1] - (D_y[..., 1] + 1) * D_z[..., 0])
+
+        return D1 - D2 + D3  
+
+    def calculate(self, data: DataType) -> float:
+        return (NegativeJacobianDet._jacobian_det(data) <= 0).sum()  
+
+    
+class NormalizedCrossCorrelation(Metric):
+    def name(self) -> str:
+        return "Normalized Cross Correlation"
+
+    def calculate(self, data: DataType) -> float:
+        #reshape to vector
+        y_true = data[Metric._TRUE_INDEX].ravel()
+        y_pred = data[Metric._PREDICTED_INDEX].ravel()
+        #normalize
+        y_true = (y_true - np.mean(y_true)) / np.std(y_true)
+        y_pred = (y_pred - np.mean(y_pred)) / np.std(y_pred)
+
+        return np.correlate(y_true, y_pred)/len(y_true)
+
+
+class  MeanDice(Metric):
+    def name(self) -> str:
+        return "Mean Dice"
+
+    def calculate(self, data: DataType) -> float:
+        fixed_segm = data[Metric._TRUE_INDEX].flatten()
+        moved_segm = data[Metric._PREDICTED_INDEX].flatten()
+        array = f1_score(fixed_segm,  moved_segm, average=None)
+        dice_pair_segments = [dice for dice in array]
+        dice_pair_mean = mean(dice_pair_segments)
+        return dice_pair_mean
+
+
+class MeanSquaredError(Metric):
+    def name(self) -> str:
+        return "Mean Squared Error"
+
+    def calculate(self, data: DataType) -> float:
+        fixed = data[Metric._TRUE_INDEX]
+        moved = data[Metric._PREDICTED_INDEX]
+        mse_pair = mean_squared_error(fixed.flatten(), moved.flatten())
+        return mse_pair
+
+class MeanAbsoluteError(Metric):
+    def name(self) -> str:
+        return "Mean Absolute Error" 
+
+    def calculate(self, data: DataType) -> float:
+        fixed = data[Metric._TRUE_INDEX]
+        moved = data[Metric._PREDICTED_INDEX]
+        mae_pair = mean_absolute_error(fixed.flatten(), moved.flatten())
+        return mae_pair       
