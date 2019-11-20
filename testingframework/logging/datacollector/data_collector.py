@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 
 from testingframework.logging.session import Session
 
+from pandas import DataFrame
+
 
 class DataCollector(ABC):
     def __init__(self, session: Session = Session()) -> None:
@@ -45,23 +47,23 @@ class DataCollector(ABC):
         pass
 
     @abstractmethod
-    def get_runs(self, search_query: str = "") -> List[dict]:
+    def get_runs(self, search_query: str = "") -> List[DataFrame]:
         pass
 
     @abstractmethod
-    def get_parameter_values(self, parameter_name: str, runs: List[dict]) -> List[str]:
+    def get_parameter_values(self, parameter_name: str, runs: DataFrame) -> List[str]:
         pass
 
     @abstractmethod
-    def get_metric_values(self, metric_name: str, runs: List[dict]) -> List[float]:
+    def get_metric_values(self, metric_name: str, runs: DataFrame) -> List[float]:
         pass
 
     @abstractmethod
-    def get_artifacts(self, artifact_name: str, search_query: str = "") -> List[str]:
+    def get_artifacts(self, artifact_name: str, runs: DataFrame, artifact_path: str = "") -> List[str]:
         pass
     
     @abstractmethod
-    def list_metrics(self, runs: List[dict]) -> List[str]:
+    def list_metrics(self, runs: DataFrame) -> List[str]:
         pass
 
     @abstractmethod

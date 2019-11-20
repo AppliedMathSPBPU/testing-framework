@@ -1,6 +1,7 @@
 from typing import List, Set
 
 import mlflow
+from pandas import DataFrame
 from mlflow.tracking import MlflowClient
 from mlflow.entities import Experiment
 from mlflow.entities import Run
@@ -58,45 +59,28 @@ class MLflowDataCollector(DataCollector):
         return client.search_runs(self.__experiment_id, search_query)
     # end of '__get_mlflow_runs' function
 
-    def get_runs(self, search_query: str = "") -> List[dict]:
-        return [run.to_dictionary() for run in self.__get_mlflow_runs(search_query)]
+    def get_runs(self, search_query: str = "") -> DataFrame:
+        mlflow.set_tracking_uri(self.__get_uri())
+        return mlflow.search_runs(filter_string=search_query)
     # end of 'get_runs' function
 
-    def get_parameter_values(self, parameter_name: str, runs: List[dict]) -> List[str]:
-        output: List[str] = []
-
-        for run in runs:
-            try:
-                output.append(run["data"]["parameters"][parameter_name])
-            except KeyError:
-                output.append("")
-
-        return output
+    def get_parameter_values(self, parameter_name: str, runs: DataFrame) -> List[str]:
+        return runs[:, "parameters." + parameter_name]
     # end of 'get_parameter' function
 
-    def get_metric_values(self, metric_name: str, runs: List[dict]) -> List[float]:
-        output: List[float] = []
-
-        for run in runs:
-            try:
-                output.append(run["data"]["metrics"][metric_name])
-            except KeyError:
-                output.append(float("NaN"))
-
-        return output
+    def get_metric_values(self, metric_name: str, runs: DataFrame) -> List[float]:
+        return runs[:, "metrics." + metric_name]
     # end of 'get_metric' function
 
-    def get_artifacts(self, artifact_name: str, search_query: str = "") -> List[str]:
-        runs: List[Run] = self.__get_mlflow_runs(search_query)
-
-        return [run.info.artifact_uri + "/" + artifact_name for run in runs]
+    def get_artifacts(self, artifact_name: str, runs: DataFrame, artifact_path: str = "") -> List[str]:
+        return [uri + "/" + artifact_path + "/" + artifact_name for uri in runs[:, "artifact_uri"]]
     # end of 'get_artifact' function
 
-    def list_metrics(self, runs: List[dict]) -> List[str]:
+    def list_metrics(self, runs: DataFrame) -> List[str]:
         metric_names: Set[str] = set()
 
         for run in runs:
-            metrics: dict = run["data"]["metrics"]
+            metrics: DataFrame = run["data"]["metrics"]
             metric_names.update(metrics.keys())
 
         return list(metric_names)
@@ -106,4 +90,3 @@ class MLflowDataCollector(DataCollector):
         return [experiment.name
                 for experiment in MlflowClient(self.__get_uri()).list_experiments()]
     # end of 'list_experiments' function
-
