@@ -5,6 +5,7 @@ from pandas import DataFrame
 from mlflow.tracking import MlflowClient
 from mlflow.entities import Experiment
 from mlflow.entities import Run
+import pathlib as pth
 
 from testingframework.logging.datacollector.data_collector import DataCollector
 from testingframework.logging.session import Session
@@ -90,3 +91,13 @@ class MLflowDataCollector(DataCollector):
         return [experiment.name
                 for experiment in MlflowClient(self.__get_uri()).list_experiments()]
     # end of 'list_experiments' function
+
+    def list_projects(self) -> List[str]:
+        output: List[str] = []
+
+        for path in pth.Path(self.__get_uri()).iterdir():
+            if path.is_dir():
+                output.append(path.name)
+
+        return output
+    # end of 'list_projects' function

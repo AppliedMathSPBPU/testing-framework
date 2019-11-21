@@ -69,4 +69,8 @@ class DataCollector(ABC):
     @abstractmethod
     def list_experiments(self) -> List[str]:
         pass
+
+    @abstractmethod
+    def list_projects(self) -> List[str]:
+        pass
 # end of 'DataCollector' class
