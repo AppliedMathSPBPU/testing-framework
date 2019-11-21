@@ -13,7 +13,7 @@ from testingframework.logging.session import Session
 
 class MLflowDataCollector(DataCollector):
     def __init__(self, session: Session = Session()) -> None:
-        self.__experiment_id: int = None
+        self.__experiment_id: int = 0
         super().__init__(session)
     # end of '__init__' function
 
@@ -27,9 +27,14 @@ class MLflowDataCollector(DataCollector):
         Args:
             project_name (str): Project name.
         """
-        # TODO: catch doesn't exist
         self._session.project_name = project_name
 
+        if self._session.project_name not in self.list_projects():
+            self._session.project_name = ""
+            path = pth.Path(self.__get_uri())
+            if not path.exists():
+                # TODO: catch exception FileNotFound or smthg
+                path.mkdir()
         self.set_experiment()
     # end of 'set_project' function
 
@@ -40,8 +45,11 @@ class MLflowDataCollector(DataCollector):
             experiment_name (str): Experiment name.
         """
         self._session.experiment_name = experiment_name
+
+        if self._session.experiment_name not in self.list_experiments():
+            self._session.experiment_name = ""
+
         client = MlflowClient(self.__get_uri())
-        # TODO: catch doesn't exist
         experiment: Experiment = client.get_experiment_by_name(self._session.experiment_name)
         self.__experiment_id = experiment.experiment_id
     # end of 'set_experiment' function
