@@ -103,7 +103,7 @@ class MLflowDataCollector(DataCollector):
     def list_projects(self) -> List[str]:
         output: List[str] = []
 
-        for path in pth.Path(self.__get_uri()).iterdir():
+        for path in pth.Path(self._session.storage_path).iterdir():
             if path.is_dir():
                 output.append(path.name)
 
