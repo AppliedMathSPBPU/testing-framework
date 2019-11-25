@@ -17,17 +17,18 @@ class PredictDataGenerator(DataGenerator):
                  files_path: str = "", batch_size: int = 3, shuffle: bool = True) -> None:
         self._batches: List[BatchType] = []
         self._prebatched: List[PreBatchType] = []
+        self._raw_file_names: List[str] = []
 
         # insert preprocessor and batcher units
         self._units = list(units)
-        self._units.insert(0, PreprocessorUnit())
+        self._units.insert(0, PreprocessorUnit(self._raw_file_names))
         self._units.append(BatcherUnit(batch_size=batch_size,
                                        output_batch_list=self._batches,
                                        output_prebatch_list=self._prebatched))
 
         # assign next_unit
-        for i in range(len(units) - 1):
-            self._units[i].next_unit = units[i + 1]
+        for i in range(len(self._units) - 1):
+            self._units[i].next_unit = self._units[i + 1]
 
         # concatenate to files path to file names
         if files_path != "":
@@ -91,7 +92,7 @@ class PredictDataGenerator(DataGenerator):
             # remove old batches
             self._batches.clear()
 
-            # shuffle prebatches and create new batches
+            # shuffle pre-batches and create new batches
             for prebatch in self._prebatched:
                 random.shuffle(prebatch)
                 self._units[-1].process(prebatch)
@@ -99,4 +100,8 @@ class PredictDataGenerator(DataGenerator):
 
         # TODO: figure out shuffling with indices
     # end of '_shuffle' function
+
+    def get_raw_file_names(self) -> List[str]:
+        return list(self._raw_file_names)
+    # end of 'get_raw_file_names' function
 # end of 'PredictDataGenerator' class

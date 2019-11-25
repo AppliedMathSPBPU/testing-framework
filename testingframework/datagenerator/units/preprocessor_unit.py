@@ -1,10 +1,14 @@
-from typing import List, Union
+from typing import List
 import pathlib as pth
 
 from testingframework.datagenerator.units.unit import Unit, FileNameType
 
 
 class PreprocessorUnit(Unit):
+    def __init__(self, output_file_names: List[str]):
+        self._output_file_names = output_file_names
+    # end of '__init__' function
+
     def process(self, file_names: List[FileNameType]) -> None:
         """Unravel directory names into contained file names. Sort file names.
 
@@ -37,6 +41,8 @@ class PreprocessorUnit(Unit):
 
         # sort 'file_names'
         file_names.sort()
+
+        self._output_file_names.extend(file_names)
 
         self.next_unit.process(file_names)
     # end of 'process' function
