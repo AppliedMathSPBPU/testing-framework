@@ -3,7 +3,7 @@ from typing import Tuple, List, Union
 import numpy as np
 import logging
 
-from testingframework.datagenerator.data_generator import DataGenerator
+from testingframework.datagenerator.data_generator import PredictDataGenerator
 from testingframework.datagenerator.units.unit import FileNameType
 
 
