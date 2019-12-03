@@ -51,6 +51,10 @@ class MLflowDataCollector(DataCollector):
 
         client = MlflowClient(self.__get_uri())
         experiment: Experiment = client.get_experiment_by_name(self._session.experiment_name)
+
+        # TODO: throw exception here
+        if experiment is None:
+            return
         self.__experiment_id = experiment.experiment_id
     # end of 'set_experiment' function
 
@@ -70,7 +74,8 @@ class MLflowDataCollector(DataCollector):
 
     def get_runs(self, search_query: str = "") -> DataFrame:
         mlflow.set_tracking_uri(self.__get_uri())
-        return mlflow.search_runs(filter_string=search_query)
+        return mlflow.search_runs(experiment_ids=self.__experiment_id,
+                                  filter_string=search_query)
     # end of 'get_runs' function
 
     def get_parameter_values(self, parameter_name: str, runs: DataFrame) -> List[str]:

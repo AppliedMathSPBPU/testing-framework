@@ -47,7 +47,7 @@ class DataCollector(ABC):
         pass
 
     @abstractmethod
-    def get_runs(self, search_query: str = "") -> List[DataFrame]:
+    def get_runs(self, search_query: str = "") -> DataFrame:
         pass
 
     @abstractmethod
