@@ -6,8 +6,8 @@ from dash.dependencies import Input, Output, State
 import dash_table as dt
 import pandas as pd
 
+from testingframework.logging.datacollector.data_collector import DataCollector
 from testingframework.reportgeneration.uireportgenerator.report_generator import ReportGenerator
-from testingframework.reportgeneration.uireportgenerator.widgets.multi_page_widget import MultiPageWidget
 from testingframework.reportgeneration.uireportgenerator.widgets.session_widget import SessionWidget
 from testingframework.reportgeneration.uireportgenerator.widgets.widget import Widget
 
@@ -19,21 +19,26 @@ class RunsTableWidget(Widget):
     RUNS_TABLE_ID: str = "runs_table"
     GENERATE_REPORT_BUTTON_ID: str = "generate_report_button"
 
-    def get_layout(self, report_generator: ReportGenerator) -> Component:
-        df = report_generator.runs
+    def __init__(self, data_collector: DataCollector, runs: pd.DataFrame):
+        super().__init__()
 
+        self._runs = runs
+        self._data_collector = data_collector
+    # end of '__init__' function
+
+    def get_layout(self) -> Component:
         return html.Div(children=[
             dcc.Input(id=self.SEARCH_QUERY_ID),
             html.Div(id="test"),
             html.Button("Search", id=self.SEARCH_BUTTON_ID),
             html.Button("Generate report", id=self.GENERATE_REPORT_BUTTON_ID),
             dt.DataTable(id=self.RUNS_TABLE_ID,
-                         columns=[{"name": i, "id": i} for i in df.columns],
-                         data=df.to_dict("re"), row_selectable='multi')
+                         columns=[{"name": i, "id": i} for i in self._runs.columns],
+                         data=self._runs.to_dict("re"), row_selectable='multi')
         ], id=self.RUNS_TABLE_WIDGET_ID)
-    # end of 'get_component' function
+    # end of 'get_layout' function
 
-    def assign_callbacks(self, app: Dash, report_generator: ReportGenerator) -> None:
+    def assign_callbacks(self, app: Dash) -> None:
         @app.callback([Output(self.RUNS_TABLE_ID, 'data'),
                        Output(self.RUNS_TABLE_ID, 'columns')],
                       [Input(self.SEARCH_BUTTON_ID, 'n_clicks'),
@@ -46,10 +51,10 @@ class RunsTableWidget(Widget):
                         experiment, storage_path, query):
             print("Search runs: " + str(query))
 
-            report_generator.data_collector.set_storage_path(storage_path)
-            report_generator.data_collector.set_project(project)
-            report_generator.data_collector.set_experiment(experiment)
-            df = report_generator.data_collector.get_runs(query)
+            self._data_collector.set_storage_path(storage_path)
+            self._data_collector.set_project(project)
+            self._data_collector.set_experiment(experiment)
+            df = self._data_collector.get_runs(query)
             print(str(df))
 
             return df.to_dict("records"), [{"name": i, "id": i} for i in df.columns]
@@ -63,9 +68,9 @@ class RunsTableWidget(Widget):
         def generate_report(n_clicks, table_rows, selected_row_indices):
             print("Generate report")
 
-            report_generator.runs = pd.DataFrame(table_rows)
+            self._runs = pd.DataFrame(table_rows)
             if selected_row_indices:
-                report_generator.runs = report_generator.runs.loc[selected_row_indices]
+                self._runs = self._runs.loc[selected_row_indices]
 
             return ""
         # end of 'generate_report' function

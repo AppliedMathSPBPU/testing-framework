@@ -5,7 +5,6 @@ from dash.development.base_component import Component
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-from testingframework.reportgeneration.uireportgenerator.report_generator import ReportGenerator
 from testingframework.reportgeneration.uireportgenerator.widgets.page_widget import PageWidget
 from testingframework.reportgeneration.uireportgenerator.widgets.widget import Widget
 
@@ -24,17 +23,17 @@ class MultiPageWidget(Widget):
         self._pages.update({page.pathname: page})
     # end of 'add_page' function
 
-    def get_layout(self, report_generator: ReportGenerator) -> Component:
+    def get_layout(self) -> Component:
         return html.Div(children=[
             html.Plaintext(id=self.LOCATION_ID),
             html.Div(id=self.PAGE_CONTENT_ID,
-                     children=self._pages.get("").get_layout(report_generator))
+                     children=self._pages.get("").get_layout())
         ])
-    # end of 'get_component' function
+    # end of 'get_layout' function
 
-    def assign_callbacks(self, app: Dash, report_generator: ReportGenerator) -> None:
+    def assign_callbacks(self, app: Dash) -> None:
         for page in self._pages.values():
-            page.assign_callbacks(app, report_generator)
+            page.assign_callbacks(app)
 
         @app.callback(Output(self.PAGE_CONTENT_ID, "children"),
                       [Input(self.LOCATION_ID, "children")])
@@ -45,7 +44,7 @@ class MultiPageWidget(Widget):
             print("Switching to " + pathname)
 
             if pathname in self._pages:
-                return self._pages.get(pathname).get_layout(report_generator)
+                return self._pages.get(pathname).get_layout()
 
             print("No such page found!")
             return []
